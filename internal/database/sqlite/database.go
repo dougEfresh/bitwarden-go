@@ -10,46 +10,57 @@ import (
 	bw "github.com/VictorNine/bitwarden-go/internal/common"
 	_ "github.com/mattn/go-sqlite3"
 	uuid "github.com/satori/go.uuid"
+	"os"
 )
 
 type DB struct {
 	db *sql.DB
 }
 
+const acctTbl = `
+CREATE TABLE "accounts" (
+  id                 INT,
+  name               TEXT,
+  email              TEXT UNIQUE,
+  masterpasswordhash NUMERIC,
+  masterpasswordhint TEXT,
+  KEY                TEXT,
+  refreshtoken       TEXT,
+  privatekey         TEXT NOT NULL,
+  pubkey             TEXT NOT NULL,
+PRIMARY KEY(id)
+)
+`
+const ciphersTbl = `
+CREATE TABLE "ciphers" (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  type         INT,
+  revisiondate INT,
+  data         REAL,
+  OWNER        INT,
+  folderid     TEXT,
+  favorite     INT NOT NULL
+)
+`
+const foldersTbl = `
+CREATE TABLE "folders" (
+  id	          TEXT,
+  name	      TEXT,
+  revisiondate INTEGER,
+  owner	      INTEGER,
+PRIMARY KEY(id)
+)
+`
+
 func (db *DB) Init() error {
-	query1 := "CREATE TABLE \"accounts\" (`id`	INTEGER,`name`	TEXT,`email`	TEXT UNIQUE,`masterPasswordHash`	NUMERIC,`masterPasswordHint`	TEXT,`key`	TEXT,`refreshtoken`	TEXT,`privatekey`	TEXT NOT NULL,`pubkey`	TEXT NOT NULL,PRIMARY KEY(id))"
-	query2 := "CREATE TABLE \"ciphers\" (`id`	INTEGER PRIMARY KEY AUTOINCREMENT,`type`	INTEGER,`revisiondate`	INTEGER,`data`	REAL,`owner`	INTEGER,`folderid`	TEXT,`favorite`	INTEGER NOT NULL)"
-	query3 := "CREATE TABLE \"folders\" (`id`	TEXT,	`name`	TEXT,	`revisiondate`	INTEGER,	`owner`	INTEGER, PRIMARY KEY(id))"
-	stmt1, err := db.db.Prepare(query1)
-	if err != nil {
-		return err
+	for _, sql := range []string{acctTbl, ciphersTbl, foldersTbl} {
+		_, err := db.db.Exec(sql)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error with %s", sql)
+			return err
+		}
 	}
-
-	_, err = stmt1.Exec()
-	if err != nil {
-		return err
-	}
-
-	stmt2, err := db.db.Prepare(query2)
-	if err != nil {
-		return err
-	}
-
-	_, err = stmt2.Exec()
-	if err != nil {
-		return err
-	}
-
-	stmt3, err := db.db.Prepare(query3)
-	if err != nil {
-		return err
-	}
-
-	_, err = stmt3.Exec()
-	if err != nil {
-		return err
-	}
-	return err
+	return nil
 }
 
 func (db *DB) Open() error {
