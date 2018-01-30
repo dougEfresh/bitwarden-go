@@ -10,6 +10,7 @@ import (
 	bw "github.com/VictorNine/bitwarden-go/internal/common"
 	_ "github.com/mattn/go-sqlite3"
 	uuid "github.com/satori/go.uuid"
+	"errors"
 )
 
 type DB struct {
@@ -51,22 +52,10 @@ PRIMARY KEY(id)
 )
 `
 
-type sqlError struct {
-	errorMsg string
-}
-
-// Custom error to show sql that has failed
-func (e sqlError) Error() string {
-	return e.errorMsg
-}
-
 func (db *DB) Init() error {
 	for _, sql := range []string{acctTbl, ciphersTbl, foldersTbl} {
-		_, err := db.db.Exec(sql)
-		if err != nil {
-			return sqlError{
-				fmt.Sprintf("SQL error with %s\n%s", sql, err.Error()),
-			}
+		if _, err := db.db.Exec(sql) ; err != nil {
+			return errors.New(fmt.Sprintf("SQL error with %s\n%s", sql, err.Error()))
 		}
 	}
 	return nil
