@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"path"
 	"strconv"
 	"time"
 
@@ -14,7 +15,8 @@ import (
 )
 
 type DB struct {
-	db *sql.DB
+	db  *sql.DB
+	dir string
 }
 
 const acctTbl = `
@@ -61,9 +63,17 @@ func (db *DB) Init() error {
 	return nil
 }
 
+func (db *DB) SetDir(d string) {
+	db.dir = d
+}
+
 func (db *DB) Open() error {
 	var err error
-	db.db, err = sql.Open("sqlite3", "db")
+	if db.dir != "" {
+		db.db, err = sql.Open("sqlite3", path.Join(db.dir, "db"))
+	} else {
+		db.db, err = sql.Open("sqlite3", "db")
+	}
 	return err
 }
 
