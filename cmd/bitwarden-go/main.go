@@ -80,6 +80,11 @@ func main() {
 		mux.Handle("/", http.HandlerFunc(proxy.Handler))
 	}
 
+	mux.Handle("/api/two-factor/get-authenticator", authHandler.JwtMiddleware(http.HandlerFunc(authHandler.GetAuthenticator)))
+	mux.Handle("/api/two-factor/authenticator", authHandler.JwtMiddleware(http.HandlerFunc(authHandler.VerifyAuthenticatorSecret)))
+	mux.Handle("/api/two-factor/disable", authHandler.JwtMiddleware(http.HandlerFunc(authHandler.HandleDisableTwoFactor)))
+	mux.Handle("/api/two-factor", authHandler.JwtMiddleware(http.HandlerFunc(authHandler.HandleTwoFactor)))
+
 	log.Println("Starting server on " + cfg.hostAddr + ":" + cfg.hostPort)
 	log.Fatal(http.ListenAndServe(cfg.hostAddr+":"+cfg.hostPort, mux))
 }
