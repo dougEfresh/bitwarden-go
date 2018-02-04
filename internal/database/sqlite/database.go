@@ -20,7 +20,7 @@ type DB struct {
 }
 
 const acctTbl = `
-CREATE TABLE "accounts" (
+CREATE TABLE IF NOT EXISTS "accounts" (
   id                 INT,
   name               TEXT,
   email              TEXT UNIQUE,
@@ -34,7 +34,7 @@ PRIMARY KEY(id)
 )
 `
 const ciphersTbl = `
-CREATE TABLE "ciphers" (
+CREATE TABLE IF NOT EXISTS "ciphers" (
   id           INTEGER PRIMARY KEY AUTOINCREMENT,
   type         INT,
   revisiondate INT,
@@ -45,11 +45,11 @@ CREATE TABLE "ciphers" (
 )
 `
 const foldersTbl = `
-CREATE TABLE "folders" (
-  id	          TEXT,
-  name	      TEXT,
+CREATE TABLE IF NOT EXISTS "folders" (
+  id	       TEXT,
+  name	       TEXT,
   revisiondate INTEGER,
-  owner	      INTEGER,
+  owner	       INTEGER,
 PRIMARY KEY(id)
 )
 `
